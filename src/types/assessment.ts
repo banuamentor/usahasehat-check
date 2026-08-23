@@ -140,7 +140,7 @@ export type AnswerMap = Record<string, AnswerRecord>;
 export interface ApplicabilityResult {
   indicatorId: string;
   applicable: boolean;
-  reason?: string;
+  reason?: string | undefined;
 }
 
 export interface IndicatorScore {
@@ -179,7 +179,7 @@ export interface TriggeredFlag {
 
 export interface Priority {
   rank: number;
-  indicatorId?: string;
+  indicatorId?: string | undefined;
   dimensionId: string;
   title: string;
   why: string;
@@ -191,7 +191,7 @@ export interface Priority {
     urgency: number;
     actionability: number;
   };
-  linkedFlagId?: string;
+  linkedFlagId?: string | undefined;
 }
 
 export interface ActionItem {

@@ -124,10 +124,9 @@ export function calculateOverallScore(dimensionScores: DimensionScore[]): number
 
 export function resolveHealthStatus(score: number): HealthStatusRule {
   const rounded = Math.round(score);
-  return (
-    HEALTH_STATUS_RULES.find((rule) => rounded >= rule.min && rounded <= rule.max) ??
-    HEALTH_STATUS_RULES[0]
-  );
+  const match = HEALTH_STATUS_RULES.find((rule) => rounded >= rule.min && rounded <= rule.max);
+  if (match) return match;
+  return rounded > 100 ? HEALTH_STATUS_RULES[HEALTH_STATUS_RULES.length - 1]! : HEALTH_STATUS_RULES[0]!;
 }
 
 /** Critical flags adalah lapisan terpisah: tidak mengubah skor. */

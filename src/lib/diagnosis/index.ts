@@ -76,9 +76,8 @@ export function buildDiagnosis(
 
   const semanticNotes: string[] = [];
   const fin06 = indicatorScores.find((item) => item.indicatorId === "FIN-06");
-  if (fin06?.applicable && fin06.semanticValue && FIN06_SEMANTIC_DIAGNOSIS[fin06.semanticValue]) {
-    semanticNotes.push(FIN06_SEMANTIC_DIAGNOSIS[fin06.semanticValue]);
-  }
+  const fin06Note = fin06?.applicable && fin06.semanticValue ? FIN06_SEMANTIC_DIAGNOSIS[fin06.semanticValue] : undefined;
+  if (fin06Note) semanticNotes.push(fin06Note);
 
   return { summary, crossDimensionStatements, dimensionNotes, semanticNotes };
 }
