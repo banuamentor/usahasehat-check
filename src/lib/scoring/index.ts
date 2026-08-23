@@ -150,6 +150,7 @@ export function evaluateCriticalFlags(
       name: flag.name,
       severity: flag.severity,
       dimensionId: flag.dimensionId,
+      sourceIndicatorId: flag.sourceIndicatorId,
       userExplanation: flag.userExplanation,
       recommendation: flag.recommendation,
       triggerData: {

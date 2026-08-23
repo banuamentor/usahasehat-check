@@ -172,6 +172,7 @@ export interface TriggeredFlag {
   name: string;
   severity: Severity;
   dimensionId: string;
+  sourceIndicatorId: string;
   userExplanation: string;
   recommendation: string;
   triggerData: Record<string, unknown>;

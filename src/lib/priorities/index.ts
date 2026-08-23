@@ -71,7 +71,7 @@ export function rankPriorities(
     candidates.set(indicatorId, candidate);
   };
 
-  for (const flag of flags) addCandidate(flag.sourceIndicatorId ?? "", { flag });
+  for (const flag of flags) addCandidate(flag.sourceIndicatorId, { flag });
   for (const score of indicatorScores) {
     if (score.applicable && score.rawScore !== null && score.rawScore <= 2) {
       addCandidate(score.indicatorId, {});
