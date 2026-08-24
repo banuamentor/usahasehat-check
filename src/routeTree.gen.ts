@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TentangRouteImport } from './routes/tentang'
+import { Route as AssessmentAssessmentIdRouteImport } from './routes/assessment.$assessmentId'
 import { Route as AssessmentStartRouteImport } from './routes/assessment.start'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const TentangRoute = TentangRouteImport.update({
   path: '/tentang',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssessmentAssessmentIdRoute = AssessmentAssessmentIdRouteImport.update({
+  id: '/assessment/$assessmentId',
+  path: '/assessment/$assessmentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssessmentStartRoute = AssessmentStartRouteImport.update({
   id: '/assessment/start',
   path: '/assessment/start',
@@ -32,30 +38,40 @@ const AssessmentStartRoute = AssessmentStartRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/tentang': typeof TentangRoute
+  '/assessment/$assessmentId': typeof AssessmentAssessmentIdRoute
   '/assessment/start': typeof AssessmentStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/tentang': typeof TentangRoute
+  '/assessment/$assessmentId': typeof AssessmentAssessmentIdRoute
   '/assessment/start': typeof AssessmentStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/tentang': typeof TentangRoute
+  '/assessment/$assessmentId': typeof AssessmentAssessmentIdRoute
   '/assessment/start': typeof AssessmentStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/tentang' | '/assessment/start'
+  fullPaths:
+    '/' | '/tentang' | '/assessment/$assessmentId' | '/assessment/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/tentang' | '/assessment/start'
-  id: '__root__' | '/' | '/tentang' | '/assessment/start'
+  to: '/' | '/tentang' | '/assessment/$assessmentId' | '/assessment/start'
+  id:
+    | '__root__'
+    | '/'
+    | '/tentang'
+    | '/assessment/$assessmentId'
+    | '/assessment/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TentangRoute: typeof TentangRoute
+  AssessmentAssessmentIdRoute: typeof AssessmentAssessmentIdRoute
   AssessmentStartRoute: typeof AssessmentStartRoute
 }
 
@@ -75,6 +91,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TentangRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assessment/$assessmentId': {
+      id: '/assessment/$assessmentId'
+      path: '/assessment/$assessmentId'
+      fullPath: '/assessment/$assessmentId'
+      preLoaderRoute: typeof AssessmentAssessmentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/assessment/start': {
       id: '/assessment/start'
       path: '/assessment/start'
@@ -88,6 +111,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TentangRoute: TentangRoute,
+  AssessmentAssessmentIdRoute: AssessmentAssessmentIdRoute,
   AssessmentStartRoute: AssessmentStartRoute,
 }
 export const routeTree = rootRouteImport
