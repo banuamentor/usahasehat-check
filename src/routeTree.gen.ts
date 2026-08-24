@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TentangRouteImport } from './routes/tentang'
+import { Route as AssessmentStartRouteImport } from './routes/assessment.start'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const TentangRoute = TentangRouteImport.update({
   path: '/tentang',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssessmentStartRoute = AssessmentStartRouteImport.update({
+  id: '/assessment/start',
+  path: '/assessment/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/tentang': typeof TentangRoute
+  '/assessment/start': typeof AssessmentStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/tentang': typeof TentangRoute
+  '/assessment/start': typeof AssessmentStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/tentang': typeof TentangRoute
+  '/assessment/start': typeof AssessmentStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/tentang'
+  fullPaths: '/' | '/tentang' | '/assessment/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/tentang'
-  id: '__root__' | '/' | '/tentang'
+  to: '/' | '/tentang' | '/assessment/start'
+  id: '__root__' | '/' | '/tentang' | '/assessment/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TentangRoute: typeof TentangRoute
+  AssessmentStartRoute: typeof AssessmentStartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TentangRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assessment/start': {
+      id: '/assessment/start'
+      path: '/assessment/start'
+      fullPath: '/assessment/start'
+      preLoaderRoute: typeof AssessmentStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TentangRoute: TentangRoute,
+  AssessmentStartRoute: AssessmentStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
