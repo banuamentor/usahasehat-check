@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TentangRouteImport } from './routes/tentang'
+import { Route as AssessmentAssessmentIdRouteImport } from './routes/assessment.$assessmentId'
+import { Route as AssessmentStartRouteImport } from './routes/assessment.start'
+import { Route as ResultsAssessmentIdRouteImport } from './routes/results.$assessmentId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +25,74 @@ const TentangRoute = TentangRouteImport.update({
   path: '/tentang',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssessmentAssessmentIdRoute = AssessmentAssessmentIdRouteImport.update({
+  id: '/assessment/$assessmentId',
+  path: '/assessment/$assessmentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssessmentStartRoute = AssessmentStartRouteImport.update({
+  id: '/assessment/start',
+  path: '/assessment/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultsAssessmentIdRoute = ResultsAssessmentIdRouteImport.update({
+  id: '/results/$assessmentId',
+  path: '/results/$assessmentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/tentang': typeof TentangRoute
+  '/assessment/$assessmentId': typeof AssessmentAssessmentIdRoute
+  '/assessment/start': typeof AssessmentStartRoute
+  '/results/$assessmentId': typeof ResultsAssessmentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/tentang': typeof TentangRoute
+  '/assessment/$assessmentId': typeof AssessmentAssessmentIdRoute
+  '/assessment/start': typeof AssessmentStartRoute
+  '/results/$assessmentId': typeof ResultsAssessmentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/tentang': typeof TentangRoute
+  '/assessment/$assessmentId': typeof AssessmentAssessmentIdRoute
+  '/assessment/start': typeof AssessmentStartRoute
+  '/results/$assessmentId': typeof ResultsAssessmentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/tentang'
+  fullPaths:
+    | '/'
+    | '/tentang'
+    | '/assessment/$assessmentId'
+    | '/assessment/start'
+    | '/results/$assessmentId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/tentang'
-  id: '__root__' | '/' | '/tentang'
+  to:
+    | '/'
+    | '/tentang'
+    | '/assessment/$assessmentId'
+    | '/assessment/start'
+    | '/results/$assessmentId'
+  id:
+    | '__root__'
+    | '/'
+    | '/tentang'
+    | '/assessment/$assessmentId'
+    | '/assessment/start'
+    | '/results/$assessmentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TentangRoute: typeof TentangRoute
+  AssessmentAssessmentIdRoute: typeof AssessmentAssessmentIdRoute
+  AssessmentStartRoute: typeof AssessmentStartRoute
+  ResultsAssessmentIdRoute: typeof ResultsAssessmentIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +111,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TentangRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assessment/$assessmentId': {
+      id: '/assessment/$assessmentId'
+      path: '/assessment/$assessmentId'
+      fullPath: '/assessment/$assessmentId'
+      preLoaderRoute: typeof AssessmentAssessmentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assessment/start': {
+      id: '/assessment/start'
+      path: '/assessment/start'
+      fullPath: '/assessment/start'
+      preLoaderRoute: typeof AssessmentStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/results/$assessmentId': {
+      id: '/results/$assessmentId'
+      path: '/results/$assessmentId'
+      fullPath: '/results/$assessmentId'
+      preLoaderRoute: typeof ResultsAssessmentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TentangRoute: TentangRoute,
+  AssessmentAssessmentIdRoute: AssessmentAssessmentIdRoute,
+  AssessmentStartRoute: AssessmentStartRoute,
+  ResultsAssessmentIdRoute: ResultsAssessmentIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
