@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { buildAssessmentResult } from "@/lib/assessment/result-engine";
 import type { ActionItem, AnswerMap, AssessmentResult, BusinessProfile } from "@/types/assessment";
 
@@ -32,14 +33,14 @@ export async function saveAssessment(userId: string, result: AssessmentResult): 
       display_score: result.displayScore,
       status_id: result.status.id,
       status_label: result.status.label,
-      business_profile: result.profile as unknown as Record<string, unknown>,
-      answers: result.answers as unknown as Record<string, unknown>,
-      indicator_scores: result.indicatorScores as unknown as Record<string, unknown>[],
-      dimension_scores: result.dimensionScores as unknown as Record<string, unknown>[],
-      flags: result.flags as unknown as Record<string, unknown>[],
-      diagnosis: result.diagnosis as unknown as Record<string, unknown>,
-      strengths: result.strengths as unknown as Record<string, unknown>[],
-      priorities: result.priorities as unknown as Record<string, unknown>[],
+      business_profile: result.profile as unknown as Json,
+      answers: result.answers as unknown as Json,
+      indicator_scores: result.indicatorScores as unknown as Json,
+      dimension_scores: result.dimensionScores as unknown as Json,
+      flags: result.flags as unknown as Json,
+      diagnosis: result.diagnosis as unknown as Json,
+      strengths: result.strengths as unknown as Json,
+      priorities: result.priorities as unknown as Json,
     })
     .select("id")
     .single();
