@@ -145,7 +145,7 @@ describe("skor keseluruhan", () => {
       dimensionId: dimension.id,
       score: index === 0 ? 0 : 80,
       displayScore: index === 0 ? 0 : 80,
-      status: (index === 0 ? "INSUFFICIENT_DATA" : "SCORED") as const,
+      status: index === 0 ? ("INSUFFICIENT_DATA" as const) : ("SCORED" as const),
       applicableIndicatorCount: index === 0 ? 0 : 3,
       totalIndicatorCount: 3,
     }));

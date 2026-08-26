@@ -1,8 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 
+import { toast } from "sonner";
+
 import { SiteFooter, SiteHeader } from "@/components/brand/site-header";
+import { useAuth } from "@/hooks/use-auth";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  isUuid,
+  loadAssessment,
+  saveAssessment,
+  updateActionItemStatus,
+  type StoredActionItem,
+} from "@/lib/assessment/persistence";
 import { ScoreBar, SeverityBadge, StatusBadge } from "@/components/results/score-display";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,21 +52,72 @@ function dimensionName(id: string): string {
 
 function ResultsPage() {
   const { assessmentId } = Route.useParams();
+  const { user } = useAuth();
+  const saved = isUuid(assessmentId);
   const [draft, setDraft] = useState<AssessmentDraft | null>(null);
+  const [remote, setRemote] = useState<AssessmentResult | null>(null);
+  const [actionItems, setActionItems] = useState<StoredActionItem[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setDraft(loadDraft(assessmentId));
-    setLoaded(true);
-  }, [assessmentId]);
+    let active = true;
+    if (saved) {
+      setLoaded(false);
+      void loadAssessment(assessmentId)
+        .then((data) => {
+          if (!active) return;
+          setRemote(data?.result ?? null);
+          setActionItems(data?.actionItems ?? []);
+        })
+        .catch((error: unknown) => {
+          if (active) toast.error(error instanceof Error ? error.message : "Gagal memuat hasil.");
+        })
+        .finally(() => {
+          if (active) setLoaded(true);
+        });
+    } else {
+      setDraft(loadDraft(assessmentId));
+      setLoaded(true);
+    }
+    return () => {
+      active = false;
+    };
+  }, [assessmentId, saved]);
 
-  const result: AssessmentResult | null = useMemo(
+  const localResult: AssessmentResult | null = useMemo(
     () =>
       draft
         ? buildAssessmentResult(draft.profile, draft.answers, { id: draft.id, createdAt: draft.createdAt })
         : null,
     [draft],
   );
+  const result: AssessmentResult | null = saved ? remote : localResult;
+
+  async function handleSaveToAccount() {
+    if (!result || !user) return;
+    setSaving(true);
+    try {
+      const id = await saveAssessment(user.id, result);
+      toast.success("Hasil tersimpan ke akun Anda.");
+      void navigate({ to: "/results/$assessmentId", params: { assessmentId: id } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menyimpan hasil.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function toggleItem(item: StoredActionItem, done: boolean) {
+    const nextStatus: StoredActionItem["status"] = done ? "done" : "todo";
+    setActionItems((prev) => prev.map((row) => (row.id === item.id ? { ...row, status: nextStatus } : row)));
+    try {
+      await updateActionItemStatus(item.id, nextStatus);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal memperbarui status.");
+    }
+  }
 
   if (!loaded) {
     return (
@@ -229,7 +291,26 @@ function ResultsPage() {
                 <ul className="space-y-3">
                   {items.map((item) => (
                     <li key={item.id} className="rounded-lg border border-border bg-background p-3">
-                      <p className="text-sm text-foreground">{item.title}</p>
+                      {saved ? (
+                        (() => {
+                          const stored = actionItems.find((row) => row.itemKey === item.id);
+                          if (!stored) return <p className="text-sm text-foreground">{item.title}</p>;
+                          return (
+                            <label className="flex items-start gap-2 text-sm text-foreground">
+                              <Checkbox
+                                checked={stored.status === "done"}
+                                onCheckedChange={(value) => void toggleItem(stored, value === true)}
+                                className="mt-0.5"
+                              />
+                              <span className={stored.status === "done" ? "line-through opacity-70" : undefined}>
+                                {item.title}
+                              </span>
+                            </label>
+                          );
+                        })()
+                      ) : (
+                        <p className="text-sm text-foreground">{item.title}</p>
+                      )}
                       <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
                       <p className="mt-1 text-xs text-muted-foreground">{item.completionCriteria}</p>
                     </li>
@@ -248,10 +329,26 @@ function ResultsPage() {
             Simpan hasil ini
           </p>
           <p className="text-sm text-muted-foreground">
-            Hasil saat ini tersimpan di perangkat Anda. Lakukan pemeriksaan ulang setelah 30 hari untuk melihat
-            perkembangan.
+            {saved
+              ? "Hasil ini tersimpan di akun Anda. Lakukan pemeriksaan ulang setelah 30 hari untuk melihat perkembangan."
+              : "Hasil saat ini tersimpan di perangkat Anda. Simpan ke akun agar bisa dipantau dan dibandingkan nanti."}
           </p>
           <div className="flex flex-wrap gap-3">
+            {!saved ? (
+              user ? (
+                <Button onClick={() => void handleSaveToAccount()} disabled={saving}>
+                  {saving ? "Menyimpan…" : "Simpan ke akun"}
+                </Button>
+              ) : (
+                <Button asChild>
+                  <Link to="/auth">Masuk untuk menyimpan</Link>
+                </Button>
+              )
+            ) : (
+              <Button asChild>
+                <Link to="/dashboard">Buka dashboard</Link>
+              </Button>
+            )}
             <Button asChild>
               <Link to="/assessment/start">Cek ulang nanti</Link>
             </Button>
