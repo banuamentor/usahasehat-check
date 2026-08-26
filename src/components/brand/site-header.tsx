@@ -1,7 +1,20 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Activity } from "lucide-react";
+import { toast } from "sonner";
+
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export function SiteHeader() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    toast.success("Anda telah keluar.");
+    void navigate({ to: "/" });
+  }
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
@@ -12,9 +25,27 @@ export function SiteHeader() {
           Cek Sehat Bisnis
         </Link>
         <nav aria-label="Navigasi utama" className="flex items-center gap-4 text-sm">
-          <Link to="/tentang" className="text-muted-foreground hover:text-foreground">
+          <Link to="/tentang" className="hidden text-muted-foreground hover:text-foreground sm:inline">
             Cara kerja
           </Link>
+          {loading ? null : user ? (
+            <>
+              <Link to="/dashboard" className="text-muted-foreground hover:text-foreground">
+                Dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={() => void handleSignOut()}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Keluar
+              </button>
+            </>
+          ) : (
+            <Link to="/auth" className="text-muted-foreground hover:text-foreground">
+              Masuk
+            </Link>
+          )}
           <Link
             to="/assessment/start"
             className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
