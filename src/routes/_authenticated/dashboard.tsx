@@ -14,7 +14,7 @@ import {
   listAssessments,
   type SavedAssessmentSummary,
 } from "@/lib/assessment/persistence";
-import { STATUS_LEVELS } from "@/config/framework";
+import { HEALTH_STATUS_RULES } from "@/config/framework";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function toneFor(statusId: string) {
-  return STATUS_LEVELS.find((level) => level.id === statusId)?.tone ?? "fair";
+  return HEALTH_STATUS_RULES.find((level) => level.id === statusId)?.tone ?? "fair";
 }
 
 function DashboardPage() {
