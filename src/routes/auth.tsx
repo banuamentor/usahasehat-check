@@ -107,7 +107,17 @@ function AuthPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="password">Kata sandi</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Kata sandi</Label>
+                  {mode === "signin" ? (
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-primary hover:underline underline-offset-4"
+                    >
+                      Lupa kata sandi?
+                    </Link>
+                  ) : null}
+                </div>
                 <Input
                   id="password"
                   type="password"
