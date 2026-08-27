@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+
+import heroIllustration from "../assets/hero-illustration.jpg.asset.json";
 import { ArrowRight, ClipboardList, Compass, ListChecks, ShieldAlert } from "lucide-react";
 
 import { SiteFooter, SiteHeader } from "@/components/brand/site-header";
@@ -48,29 +50,45 @@ function LandingPage() {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="flex-1">
-        <section className="mx-auto w-full max-w-5xl px-4 pb-10 pt-12">
-          <p className="text-sm font-medium text-primary">Medical check-up untuk usaha Anda</p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight text-foreground sm:text-4xl">
-            Cek Kesehatan Bisnis Anda
-          </h1>
-          <p className="mt-4 max-w-2xl text-base text-muted-foreground">
-            Dalam sekitar 7–10 menit, lihat bagian usaha yang sudah kuat, masalah yang perlu diperbaiki, dan tiga hal
-            yang sebaiknya Anda kerjakan lebih dulu.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              to="/assessment/start"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Cek Bisnis Saya
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
-            <p className="text-sm text-muted-foreground">Sekitar 7–10 menit. Tanpa perlu membuat akun.</p>
+        <section className="mx-auto w-full max-w-5xl px-4 pb-10 pt-10">
+          <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
+            <div>
+              <p className="text-sm font-medium text-primary">Medical check-up untuk usaha Anda</p>
+              <h1 className="mt-3 text-3xl font-bold leading-tight text-foreground sm:text-4xl">
+                Cek Kesehatan Bisnis Anda
+              </h1>
+              <p className="mt-4 max-w-xl text-base text-muted-foreground">
+                Dalam sekitar 7–10 menit, lihat bagian usaha yang sudah kuat, masalah yang perlu diperbaiki, dan tiga
+                hal yang sebaiknya Anda kerjakan lebih dulu.
+              </p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  to="/assessment/start"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Cek Bisnis Saya
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+                <p className="text-sm text-muted-foreground">Sekitar 7–10 menit. Tanpa perlu membuat akun.</p>
+              </div>
+              <p className="mt-6 max-w-xl rounded-xl border border-border bg-surface p-4 text-sm text-surface-foreground">
+                Hasil digunakan untuk membantu Anda memahami kondisi usaha, bukan menentukan kelayakan kredit atau
+                memberikan penilaian hukum.
+              </p>
+            </div>
+            <div className="relative order-first lg:order-last">
+              <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                <img
+                  src={heroIllustration.url}
+                  alt="Ilustrasi pemilik usaha memeriksa kesehatan bisnisnya"
+                  width={1344}
+                  height={896}
+                  className="w-full"
+                  fetchPriority="high"
+                />
+              </div>
+            </div>
           </div>
-          <p className="mt-6 max-w-2xl rounded-xl border border-border bg-surface p-4 text-sm text-surface-foreground">
-            Hasil digunakan untuk membantu Anda memahami kondisi usaha, bukan menentukan kelayakan kredit atau
-            memberikan penilaian hukum.
-          </p>
         </section>
 
         <section className="mx-auto w-full max-w-5xl px-4 py-10">
