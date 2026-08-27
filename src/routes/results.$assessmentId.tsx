@@ -154,6 +154,13 @@ function ResultsPage() {
 
   return (
     <Shell>
+      <div className="print-only mb-4 border-b border-border pb-3">
+        <p className="font-display text-base font-semibold">Laporan Cek Sehat Bisnis UMKM</p>
+        <p className="text-xs">
+          {result.profile.businessName} ·{" "}
+          {new Date(result.createdAt).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}
+        </p>
+      </div>
       {!result.complete ? (
         <Card className="mb-6 border-warning/40 bg-warning-soft">
           <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
@@ -322,7 +329,7 @@ function ResultsPage() {
         })}
       </Section>
 
-      <Card className="mt-8 border-primary/30 bg-primary/5">
+      <Card className="no-print mt-8 border-primary/30 bg-primary/5">
         <CardContent className="space-y-3 pt-6">
           <p className="flex items-center gap-2 font-medium text-foreground">
             <Sparkles className="size-4 text-primary" aria-hidden="true" />
@@ -379,9 +386,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
+      <div className="no-print">
+        <SiteHeader />
+      </div>
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">{children}</main>
-      <SiteFooter />
+      <div className="no-print">
+        <SiteFooter />
+      </div>
     </div>
   );
 }
