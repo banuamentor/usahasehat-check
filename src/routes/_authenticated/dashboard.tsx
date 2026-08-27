@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteFooter, SiteHeader } from "@/components/brand/site-header";
+import { GuestDraftImport } from "@/features/assessment/guest-import";
 import { StatusBadge } from "@/components/results/score-display";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
