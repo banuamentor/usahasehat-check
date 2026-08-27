@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { SiteFooter, SiteHeader } from "@/components/brand/site-header";
+import { GuestDraftImport } from "@/features/assessment/guest-import";
 import { StatusBadge } from "@/components/results/score-display";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -70,6 +71,8 @@ function DashboardPage() {
             <Link to="/assessment/start">Cek ulang sekarang</Link>
           </Button>
         </div>
+
+        <GuestDraftImport onImported={() => void assessmentsQuery.refetch()} />
 
         {assessmentsQuery.isPending ? (
           <Skeleton className="mt-6 h-40 w-full" />
