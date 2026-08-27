@@ -200,3 +200,43 @@
     letter-spacing: -0.015em;
   }
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  section,
+  .print-block {
+    break-inside: avoid;
+  }
+
+  h2 {
+    break-after: avoid;
+  }
+
+  a[href]::after {
+    content: "";
+  }
+}
+
+.print-only {
+  display: none;
+}
