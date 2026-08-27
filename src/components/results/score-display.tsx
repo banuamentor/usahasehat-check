@@ -9,7 +9,7 @@ const toneClass: Record<StatusTone, string> = {
   excellent: "bg-excellent-soft text-excellent border-excellent/30",
 };
 
-export function toneForScore(score: number): StatusTone {
+function toneForScore(score: number): StatusTone {
   if (score < 40) return "critical";
   if (score < 55) return "warning";
   if (score < 70) return "fair";

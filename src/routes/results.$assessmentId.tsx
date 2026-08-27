@@ -1,5 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  Copy,
+  FileSpreadsheet,
+  Share2,
+  Sparkles,
+  Trophy,
+} from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";
@@ -59,6 +68,7 @@ function ResultsPage() {
   const [actionItems, setActionItems] = useState<StoredActionItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [copiedPlan, setCopiedPlan] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -119,6 +129,37 @@ function ResultsPage() {
     }
   }
 
+  function handleShareWhatsApp() {
+    if (!result) return;
+    const priorityList = result.priorities.map((p) => `• Prioritas #${p.rank}: ${p.title}`).join("\n");
+    const siteUrl = typeof window !== "undefined" ? window.location.origin : "https://usahasehat-check.lovable.app";
+    const message = `*Hasil Cek Kesehatan Bisnis UMKM*\nUsaha: *${result.profile.businessName}*\nSkor Kesehatan: *${result.displayScore}/100* (${result.status.label})\n\n*Ringkasan Kondisi:*\n${result.diagnosis.summary}\n\n*3 Prioritas Perbaikan:*\n${priorityList || "• Tidak ada masalah kritis saat ini."}\n\nCek kesehatan bisnis Anda secara gratis di:\n${siteUrl}`;
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  }
+
+  function handleCopyActionPlan() {
+    if (!result) return;
+    const lines: string[] = [`*Rencana Tindakan 30 Hari — ${result.profile.businessName}*`];
+    for (let w = 1; w <= 4; w++) {
+      const items = result.actionPlan.filter((it) => it.weekNumber === w);
+      if (items.length > 0) {
+        lines.push(`\n*Minggu ${w}:*`);
+        items.forEach((it) => {
+          lines.push(`- [ ] ${it.title}`);
+        });
+      }
+    }
+    navigator.clipboard
+      .writeText(lines.join("\n"))
+      .then(() => {
+        setCopiedPlan(true);
+        toast.success("Rencana 30 hari berhasil disalin ke clipboard!");
+        setTimeout(() => setCopiedPlan(false), 2500);
+      })
+      .catch(() => toast.error("Gagal menyalin ke clipboard."));
+  }
+
   if (!loaded) {
     return (
       <Shell>
@@ -145,6 +186,7 @@ function ResultsPage() {
     );
   }
 
+  const hasFinanceAction = result.priorities.some((p) => p.dimensionId === "FIN");
   const radarData = result.dimensionScores
     .filter((item) => item.status === "SCORED")
     .map((item) => ({
@@ -161,6 +203,26 @@ function ResultsPage() {
           {new Date(result.createdAt).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}
         </p>
       </div>
+
+      {/* Mobile Quick Navigation Tabs */}
+      <nav aria-label="Navigasi cepat hasil" className="no-print mb-4 flex gap-2 overflow-x-auto pb-1 text-xs sm:hidden">
+        <a href="#skor" className="rounded-full border border-border bg-surface px-3 py-1.5 font-medium whitespace-nowrap text-foreground">
+          Skor
+        </a>
+        <a href="#diagnosis" className="rounded-full border border-border bg-surface px-3 py-1.5 font-medium whitespace-nowrap text-foreground">
+          Diagnosis
+        </a>
+        <a href="#prioritas" className="rounded-full border border-border bg-surface px-3 py-1.5 font-medium whitespace-nowrap text-foreground">
+          Prioritas
+        </a>
+        <a href="#dimensi" className="rounded-full border border-border bg-surface px-3 py-1.5 font-medium whitespace-nowrap text-foreground">
+          7 Area
+        </a>
+        <a href="#rencana" className="rounded-full border border-border bg-surface px-3 py-1.5 font-medium whitespace-nowrap text-foreground">
+          Rencana 30 Hari
+        </a>
+      </nav>
+
       {!result.complete ? (
         <Card className="mb-6 border-warning/40 bg-warning-soft">
           <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
@@ -176,11 +238,22 @@ function ResultsPage() {
         </Card>
       ) : null}
 
-      <section aria-labelledby="skor" className="rounded-2xl border border-border bg-surface p-6">
-        <p className="text-sm text-muted-foreground">Hasil pemeriksaan untuk</p>
-        <h1 id="skor" className="font-display text-2xl font-semibold text-foreground">
-          {result.profile.businessName}
-        </h1>
+      <section id="skor" aria-labelledby="skor-heading" className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm text-muted-foreground">Hasil pemeriksaan untuk</p>
+            <h1 id="skor-heading" className="font-display text-2xl font-semibold text-foreground">
+              {result.profile.businessName}
+            </h1>
+          </div>
+          <div className="no-print flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={handleShareWhatsApp} className="gap-1.5">
+              <Share2 className="size-3.5 text-healthy" aria-hidden="true" />
+              Bagikan ke WA
+            </Button>
+          </div>
+        </div>
+
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <p className="font-display text-5xl font-semibold text-foreground">{result.displayScore}</p>
           <span className="pb-2 text-sm text-muted-foreground">dari 100</span>
@@ -189,11 +262,11 @@ function ResultsPage() {
         <p className="mt-3 text-sm text-muted-foreground">{result.status.summary}</p>
       </section>
 
-      <Section title="Apa yang terjadi di usaha Anda">
+      <Section id="diagnosis" title="Apa yang terjadi di usaha Anda">
         <p className="text-sm text-foreground">{result.diagnosis.summary}</p>
         {result.diagnosis.crossDimensionStatements.map((item) => (
-          <div key={item.id} className="rounded-xl border border-border bg-background p-4">
-            <p className="text-sm text-foreground">{item.statement}</p>
+          <div key={item.id} className="rounded-xl border border-border bg-background p-4 shadow-xs">
+            <p className="text-sm font-medium text-foreground">{item.statement}</p>
             {item.possibleCauses.length > 0 ? (
               <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                 {item.possibleCauses.map((cause) => (
@@ -211,19 +284,19 @@ function ResultsPage() {
       </Section>
 
       {result.flags.length > 0 ? (
-        <Section title="Risiko yang perlu segera diperhatikan">
+        <Section id="risiko" title="Risiko yang perlu segera diperhatikan">
           {result.flags.map((flag) => (
-            <Card key={flag.flagId} className="border-critical/30">
+            <Card key={flag.flagId} className="border-critical/30 bg-critical-soft/30">
               <CardContent className="space-y-2 pt-6">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="mt-0.5 size-4 text-critical" aria-hidden="true" />
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0 text-critical" aria-hidden="true" />
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium text-foreground">{flag.name}</p>
                       <SeverityBadge severity={flag.severity} />
                     </div>
                     <p className="text-sm text-muted-foreground">{flag.userExplanation}</p>
-                    <p className="text-sm text-foreground">Saran: {flag.recommendation}</p>
+                    <p className="text-sm font-medium text-foreground">Saran perbaikan: {flag.recommendation}</p>
                   </div>
                 </div>
               </CardContent>
@@ -232,24 +305,35 @@ function ResultsPage() {
         </Section>
       ) : null}
 
-      <Section title="3 prioritas perbaikan Anda">
+      <Section id="prioritas" title="3 prioritas perbaikan Anda">
         {result.priorities.map((priority) => (
-          <Card key={priority.rank}>
+          <Card key={priority.rank} className="border-border shadow-xs">
             <CardContent className="space-y-2 pt-6">
               <p className="text-xs font-semibold uppercase tracking-wide text-primary">Prioritas #{priority.rank}</p>
               <p className="font-medium text-foreground">{priority.title}</p>
               <p className="text-sm text-muted-foreground">{priority.why}</p>
-              <p className="text-sm text-foreground">Langkah pertama: {priority.whatToDo}</p>
+              <p className="text-sm font-medium text-foreground">Langkah pertama: {priority.whatToDo}</p>
               <p className="text-xs text-muted-foreground">Bagian: {dimensionName(priority.dimensionId)}</p>
             </CardContent>
           </Card>
         ))}
         {result.priorities.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Tidak ada prioritas mendesak dari jawaban Anda saat ini.</p>
+          <Card className="border-healthy/40 bg-healthy-soft/30">
+            <CardContent className="flex items-start gap-3 pt-6">
+              <Trophy className="mt-0.5 size-5 shrink-0 text-healthy" aria-hidden="true" />
+              <div>
+                <p className="font-medium text-foreground">Pondasi Usaha Sangat Prima!</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Tidak ditemukan risiko kritis mendesak dari jawaban Anda. Fokus usaha Anda saat ini adalah menjaga
+                  konsistensi kualitas, standarisasi delegasi ke tim, dan perluasan jangkauan pasar.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         ) : null}
       </Section>
 
-      <Section title="Kondisi 7 bagian usaha">
+      <Section id="dimensi" title="Kondisi 7 bagian usaha">
         {radarData.length >= 3 ? (
           <Suspense fallback={<Skeleton className="h-72 w-full" />}>
             <DimensionRadarChart data={radarData} />
@@ -277,22 +361,43 @@ function ResultsPage() {
       </Section>
 
       {result.strengths.length > 0 ? (
-        <Section title="Yang sudah Anda lakukan dengan baik">
+        <Section id="kekuatan" title="Yang sudah Anda lakukan dengan baik">
           {result.strengths.map((strength) => (
             <p key={strength.dimensionId} className="flex items-start gap-2 text-sm text-foreground">
-              <CheckCircle2 className="mt-0.5 size-4 text-healthy" aria-hidden="true" />
-              {strength.text}
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-healthy" aria-hidden="true" />
+              <span>{strength.text}</span>
             </p>
           ))}
         </Section>
       ) : null}
 
-      <Section title="Rencana 30 hari">
+      <Section id="rencana" title="Rencana 30 hari">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
+          <p className="text-xs text-muted-foreground">Kerjakan langkah bertahap per minggu untuk memperbaiki masalah utama.</p>
+          <Button size="sm" variant="outline" onClick={handleCopyActionPlan} className="no-print gap-1.5 text-xs">
+            {copiedPlan ? <Check className="size-3.5 text-healthy" /> : <Copy className="size-3.5" />}
+            {copiedPlan ? "Tersalin!" : "Salin Rencana"}
+          </Button>
+        </div>
+
+        {hasFinanceAction ? (
+          <Card className="border-border bg-surface/80">
+            <CardContent className="flex items-start gap-3 p-4">
+              <FileSpreadsheet className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+              <div className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">Tips Praktis Keuangan: </span>
+                Gunakan rumus sederhana: <span className="font-mono text-foreground">HPP = Bahan Baku + Kemasan + Upah Langsung</span>.
+                Catat kas setiap hari sebelum tutup warung/toko agar tidak ada transaksi terlewat.
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
+
         {[1, 2, 3, 4].map((week) => {
           const items = result.actionPlan.filter((item) => item.weekNumber === week);
           if (items.length === 0) return null;
           return (
-            <Card key={week}>
+            <Card key={week} className="border-border">
               <CardContent className="space-y-3 pt-6">
                 <p className="text-sm font-semibold text-foreground">Minggu {week}</p>
                 <ul className="space-y-3">
@@ -356,7 +461,11 @@ function ResultsPage() {
                 <Link to="/dashboard">Buka dashboard</Link>
               </Button>
             )}
-            <Button asChild>
+            <Button variant="outline" onClick={handleShareWhatsApp} className="gap-1.5">
+              <Share2 className="size-4 text-healthy" aria-hidden="true" />
+              Bagikan ke WA
+            </Button>
+            <Button asChild variant="outline">
               <Link to="/assessment/start">Cek ulang nanti</Link>
             </Button>
             <Button variant="outline" onClick={() => typeof window !== "undefined" && window.print()}>
@@ -374,9 +483,9 @@ function ResultsPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ id, title, children }: { id?: string; title: string; children: React.ReactNode }) {
   return (
-    <section className="mt-8 space-y-3">
+    <section id={id} className="mt-8 space-y-3">
       <h2 className="font-display text-lg font-semibold text-foreground">{title}</h2>
       {children}
     </section>

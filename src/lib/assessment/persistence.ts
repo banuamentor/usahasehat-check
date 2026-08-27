@@ -1,7 +1,19 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { buildAssessmentResult } from "@/lib/assessment/result-engine";
-import type { ActionItem, AnswerMap, AssessmentResult, BusinessProfile } from "@/types/assessment";
+import { buildActionPlan } from "@/lib/priorities";
+import { resolveHealthStatus } from "@/lib/scoring";
+import type {
+  ActionItem,
+  AnswerMap,
+  AssessmentResult,
+  BusinessProfile,
+  DiagnosisResult,
+  DimensionScore,
+  IndicatorScore,
+  Priority,
+  TriggeredFlag,
+} from "@/types/assessment";
 
 export interface SavedAssessmentSummary {
   id: string;
@@ -98,11 +110,48 @@ export async function loadAssessment(id: string): Promise<LoadedAssessment | nul
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  const result = buildAssessmentResult(
-    data.business_profile as unknown as BusinessProfile,
-    data.answers as unknown as AnswerMap,
-    { id: data.id, createdAt: data.created_at },
-  );
+  const hasStoredSnapshots =
+    Boolean(data.dimension_scores) &&
+    Boolean(data.indicator_scores) &&
+    Boolean(data.diagnosis) &&
+    typeof data.diagnosis === "object";
+
+  let result: AssessmentResult;
+
+  if (hasStoredSnapshots) {
+    const rawPriorities = Array.isArray(data.priorities)
+      ? (data.priorities as unknown as Priority[])
+      : [];
+
+    result = {
+      id: data.id,
+      createdAt: data.created_at,
+      questionnaireVersion: data.questionnaire_version,
+      scoringVersion: data.scoring_version,
+      profile: data.business_profile as unknown as BusinessProfile,
+      answers: data.answers as unknown as AnswerMap,
+      indicatorScores: (data.indicator_scores as unknown as IndicatorScore[]) ?? [],
+      dimensionScores: (data.dimension_scores as unknown as DimensionScore[]) ?? [],
+      overallScore: Number(data.overall_score),
+      displayScore: data.display_score,
+      status: resolveHealthStatus(Number(data.overall_score)),
+      flags: (Array.isArray(data.flags) ? data.flags : []) as unknown as TriggeredFlag[],
+      diagnosis: data.diagnosis as unknown as DiagnosisResult,
+      strengths: (Array.isArray(data.strengths) ? data.strengths : []) as unknown as Array<{
+        dimensionId: string;
+        text: string;
+      }>,
+      priorities: rawPriorities,
+      actionPlan: buildActionPlan(rawPriorities),
+      complete: true,
+    };
+  } else {
+    result = buildAssessmentResult(
+      data.business_profile as unknown as BusinessProfile,
+      data.answers as unknown as AnswerMap,
+      { id: data.id, createdAt: data.created_at },
+    );
+  }
 
   const { data: items, error: itemError } = await supabase
     .from("action_items")

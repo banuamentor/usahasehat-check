@@ -4,6 +4,17 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { deleteDraft, listDrafts, type AssessmentDraft } from "@/features/assessment/storage";
 import { useAuth } from "@/hooks/use-auth";
 import { saveAssessment } from "@/lib/assessment/persistence";
@@ -44,6 +55,7 @@ export function GuestDraftImport({ onImported }: { onImported?: () => void }) {
   function handleDiscard(draft: AssessmentDraft) {
     deleteDraft(draft.id);
     setDrafts(listDrafts());
+    toast.success("Draft berhasil dihapus dari perangkat.");
   }
 
   return (
@@ -84,9 +96,30 @@ export function GuestDraftImport({ onImported }: { onImported?: () => void }) {
                       </Link>
                     </Button>
                   )}
-                  <Button size="sm" variant="ghost" onClick={() => handleDiscard(draft)}>
-                    Buang
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="ghost">
+                        Buang
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Hapus draft pemeriksaan?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Draft untuk &quot;{draft.profile.businessName}&quot; akan dihapus dari perangkat ini dan tidak bisa dipulihkan.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDiscard(draft)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Hapus
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </li>
             );

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Activity } from "lucide-react";
+import { Activity, Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -8,6 +9,31 @@ import { supabase } from "@/integrations/supabase/client";
 export function SiteHeader() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (saved === "dark" || (!saved && prefersDark)) {
+      document.documentElement.classList.add("dark");
+      setIsDark(true);
+    } else {
+      document.documentElement.classList.remove("dark");
+      setIsDark(false);
+    }
+  }, []);
+
+  function toggleTheme() {
+    const next = !isDark;
+    setIsDark(next);
+    if (next) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -24,10 +50,18 @@ export function SiteHeader() {
           </span>
           Cek Sehat Bisnis
         </Link>
-        <nav aria-label="Navigasi utama" className="flex items-center gap-4 text-sm">
+        <nav aria-label="Navigasi utama" className="flex items-center gap-3 text-sm sm:gap-4">
           <Link to="/tentang" className="hidden text-muted-foreground hover:text-foreground sm:inline">
             Cara kerja
           </Link>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDark ? "Ganti ke mode terang" : "Ganti ke mode gelap"}
+            className="flex size-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+          >
+            {isDark ? <Sun className="size-4" aria-hidden="true" /> : <Moon className="size-4" aria-hidden="true" />}
+          </button>
           {loading ? null : user ? (
             <>
               <Link to="/dashboard" className="text-muted-foreground hover:text-foreground">

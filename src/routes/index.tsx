@@ -4,7 +4,7 @@ import heroIllustration from "../assets/hero-illustration.jpg.asset.json";
 import { ArrowRight, ClipboardList, Compass, ListChecks, ShieldAlert } from "lucide-react";
 
 import { SiteFooter, SiteHeader } from "@/components/brand/site-header";
-import { ScoreBar, StatusBadge, toneForScore } from "@/components/results/score-display";
+import { ScoreBar, StatusBadge } from "@/components/results/score-display";
 import { Card, CardContent } from "@/components/ui/card";
 import { DIMENSIONS } from "@/config/framework";
 import { DEMO_SCENARIOS, demoAnswers } from "@/features/assessment/demo";
@@ -183,7 +183,7 @@ function LandingPage() {
               <p className="mt-4 text-xs text-muted-foreground">
                 Contoh di atas memakai data usaha fiktif. Status ditentukan dari skor
                 {" "}
-                {toneForScore(example.displayScore) === "fair" ? "pada rentang cukup sehat" : "yang dihitung sistem"}.
+                {example.status.tone === "fair" ? "pada rentang cukup sehat" : "yang dihitung sistem"}.
               </p>
             </CardContent>
           </Card>

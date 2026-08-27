@@ -10,6 +10,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   countActionProgress,
   deleteAssessment,
   listAssessments,
@@ -54,7 +65,7 @@ function DashboardPage() {
   async function handleDelete(id: string) {
     try {
       await deleteAssessment(id);
-      toast.success("Pemeriksaan dihapus.");
+      toast.success("Pemeriksaan berhasil dihapus.");
       await assessmentsQuery.refetch();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Gagal menghapus.");
@@ -137,14 +148,34 @@ function DashboardPage() {
                             Lihat
                           </Link>
                         </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Hapus pemeriksaan ${row.businessName}`}
-                          onClick={() => void handleDelete(row.id)}
-                        >
-                          <Trash2 className="size-4" aria-hidden="true" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label={`Hapus pemeriksaan ${row.businessName}`}
+                            >
+                              <Trash2 className="size-4" aria-hidden="true" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Hapus riwayat pemeriksaan?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Pemeriksaan untuk &quot;{row.businessName}&quot; ({row.displayScore}/100) akan dihapus secara permanen beserta progres rencana tindakannya.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Batal</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => void handleDelete(row.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Hapus
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </CardContent>
                   </Card>

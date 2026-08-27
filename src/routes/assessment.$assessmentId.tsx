@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { SiteFooter, SiteHeader } from "@/components/brand/site-header";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,88 @@ function AssessmentPage() {
   }, [assessmentId]);
 
   const indicators = useMemo(() => (draft ? getApplicableIndicators(draft.profile) : []), [draft]);
+  const index = draft && indicators.length > 0 ? Math.min(draft.currentIndex, indicators.length - 1) : 0;
+  const indicator = indicators[index];
+  const dimension = indicator ? DIMENSIONS.find((item) => item.id === indicator.dimensionId) : undefined;
+  const answered = draft
+    ? Object.values(draft.answers).filter((answer) =>
+        indicators.some((item) => item.id === answer.indicatorId),
+      ).length
+    : 0;
+  const current = draft && indicator ? draft.answers[indicator.id] : undefined;
+  const canContinue = Boolean(current && (current.notApplicable || current.score !== null));
+
+  const persist = useCallback((next: AssessmentDraft) => {
+    setDraft(next);
+    saveDraft(next);
+  }, []);
+
+  const answer = useCallback((optionId: string | null, notApplicable: boolean) => {
+    if (!draft || !indicator) return;
+    const option = indicator.options.find((item) => item.id === optionId);
+    const answers: AnswerMap = {
+      ...draft.answers,
+      [indicator.id]: {
+        indicatorId: indicator.id,
+        optionId: notApplicable ? null : (option?.id ?? null),
+        score: notApplicable ? null : (option?.score ?? null),
+        semanticValue: notApplicable ? null : (option?.semanticValue ?? null),
+        notApplicable,
+        answeredAt: new Date().toISOString(),
+      },
+    };
+    persist({ ...draft, answers, updatedAt: new Date().toISOString() });
+  }, [draft, indicator, persist]);
+
+  const go = useCallback((delta: number) => {
+    if (!draft) return;
+    const next = index + delta;
+    if (next < 0) return;
+    if (next >= indicators.length) {
+      persist({
+        ...draft,
+        currentIndex: indicators.length - 1,
+        completedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      void navigate({ to: "/results/$assessmentId", params: { assessmentId } });
+      return;
+    }
+    persist({ ...draft, currentIndex: next, updatedAt: new Date().toISOString() });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+  }, [draft, index, indicators.length, persist, navigate, assessmentId]);
+
+  // Keyboard navigation hook
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (!indicator) return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT")) return;
+
+      const num = parseInt(e.key, 10);
+      if (!isNaN(num) && num >= 1 && num <= indicator.options.length) {
+        e.preventDefault();
+        const opt = indicator.options[num - 1];
+        if (opt) answer(opt.id, false);
+      } else if (e.key === "0" && indicator.allowUserNotApplicable) {
+        e.preventDefault();
+        answer(null, true);
+      } else if (e.key === "Enter" || e.key === "ArrowRight") {
+        if (canContinue) {
+          e.preventDefault();
+          go(1);
+        }
+      } else if (e.key === "ArrowLeft") {
+        if (index > 0) {
+          e.preventDefault();
+          go(-1);
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [indicator, index, canContinue, answer, go]);
 
   if (!loaded) {
     return <Shell>{null}</Shell>;
@@ -65,8 +147,6 @@ function AssessmentPage() {
     );
   }
 
-  const index = Math.min(draft.currentIndex, indicators.length - 1);
-  const indicator = indicators[index];
   if (!indicator) {
     return (
       <Shell>
@@ -74,54 +154,6 @@ function AssessmentPage() {
       </Shell>
     );
   }
-
-  const dimension = DIMENSIONS.find((item) => item.id === indicator.dimensionId);
-  const answered = Object.values(draft.answers).filter((answer) =>
-    indicators.some((item) => item.id === answer.indicatorId),
-  ).length;
-  const current = draft.answers[indicator.id];
-
-  function persist(next: AssessmentDraft) {
-    setDraft(next);
-    saveDraft(next);
-  }
-
-  function answer(optionId: string | null, notApplicable: boolean) {
-    if (!draft) return;
-    const option = indicator!.options.find((item) => item.id === optionId);
-    const answers: AnswerMap = {
-      ...draft.answers,
-      [indicator!.id]: {
-        indicatorId: indicator!.id,
-        optionId: notApplicable ? null : (option?.id ?? null),
-        score: notApplicable ? null : (option?.score ?? null),
-        semanticValue: notApplicable ? null : (option?.semanticValue ?? null),
-        notApplicable,
-        answeredAt: new Date().toISOString(),
-      },
-    };
-    persist({ ...draft, answers, updatedAt: new Date().toISOString() });
-  }
-
-  function go(delta: number) {
-    if (!draft) return;
-    const next = index + delta;
-    if (next < 0) return;
-    if (next >= indicators.length) {
-      persist({
-        ...draft,
-        currentIndex: indicators.length - 1,
-        completedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-      void navigate({ to: "/results/$assessmentId", params: { assessmentId } });
-      return;
-    }
-    persist({ ...draft, currentIndex: next, updatedAt: new Date().toISOString() });
-    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
-  }
-
-  const canContinue = Boolean(current && (current.notApplicable || current.score !== null));
 
   return (
     <Shell>
@@ -145,7 +177,7 @@ function AssessmentPage() {
           </div>
 
           <div className="space-y-2" role="radiogroup" aria-label={indicator.question}>
-            {indicator.options.map((option) => {
+            {indicator.options.map((option, optIdx) => {
               const selected = !current?.notApplicable && current?.optionId === option.id;
               return (
                 <button
@@ -155,13 +187,16 @@ function AssessmentPage() {
                   aria-checked={selected}
                   onClick={() => answer(option.id, false)}
                   className={cn(
-                    "w-full rounded-xl border px-4 py-3 text-left text-sm transition",
+                    "flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm transition",
                     selected
                       ? "border-primary bg-primary/10 font-medium text-foreground"
                       : "border-border bg-background hover:border-primary/50 hover:bg-surface",
                   )}
                 >
-                  {option.label}
+                  <span>{option.label}</span>
+                  <kbd className="hidden size-5 shrink-0 items-center justify-center rounded border border-border bg-muted text-[11px] font-mono text-muted-foreground sm:inline-flex">
+                    {optIdx + 1}
+                  </kbd>
                 </button>
               );
             })}
@@ -173,13 +208,16 @@ function AssessmentPage() {
                 aria-checked={Boolean(current?.notApplicable)}
                 onClick={() => answer(null, true)}
                 className={cn(
-                  "w-full rounded-xl border border-dashed px-4 py-3 text-left text-sm transition",
+                  "flex w-full items-center justify-between rounded-xl border border-dashed px-4 py-3 text-left text-sm transition",
                   current?.notApplicable
                     ? "border-primary bg-primary/10 font-medium text-foreground"
                     : "border-border text-muted-foreground hover:border-primary/50",
                 )}
               >
-                Tidak relevan untuk usaha saya
+                <span>Tidak relevan untuk usaha saya</span>
+                <kbd className="hidden size-5 shrink-0 items-center justify-center rounded border border-border bg-muted text-[11px] font-mono text-muted-foreground sm:inline-flex">
+                  0
+                </kbd>
               </button>
             ) : null}
           </div>
