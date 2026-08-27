@@ -154,6 +154,13 @@ function ResultsPage() {
 
   return (
     <Shell>
+      <div className="print-only mb-4 border-b border-border pb-3">
+        <p className="font-display text-base font-semibold">Laporan Cek Sehat Bisnis UMKM</p>
+        <p className="text-xs">
+          {result.profile.businessName} ·{" "}
+          {new Date(result.createdAt).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}
+        </p>
+      </div>
       {!result.complete ? (
         <Card className="mb-6 border-warning/40 bg-warning-soft">
           <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
