@@ -322,7 +322,7 @@ function ResultsPage() {
         })}
       </Section>
 
-      <Card className="mt-8 border-primary/30 bg-primary/5">
+      <Card className="no-print mt-8 border-primary/30 bg-primary/5">
         <CardContent className="space-y-3 pt-6">
           <p className="flex items-center gap-2 font-medium text-foreground">
             <Sparkles className="size-4 text-primary" aria-hidden="true" />
