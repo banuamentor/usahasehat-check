@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+
+import heroIllustration from "../assets/hero-illustration.jpg.asset.json";
 import { ArrowRight, ClipboardList, Compass, ListChecks, ShieldAlert } from "lucide-react";
 
 import { SiteFooter, SiteHeader } from "@/components/brand/site-header";
