@@ -71,6 +71,8 @@ function DashboardPage() {
           </Button>
         </div>
 
+        <GuestDraftImport onImported={() => void assessmentsQuery.refetch()} />
+
         {assessmentsQuery.isPending ? (
           <Skeleton className="mt-6 h-40 w-full" />
         ) : assessmentsQuery.isError ? (
