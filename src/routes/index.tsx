@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import heroIllustration from "../assets/hero-illustration.jpg.asset.json";
+import heroIllustration from "../assets/hero-illustration.jpg";
 import { ArrowRight, ClipboardList, Compass, ListChecks, ShieldAlert } from "lucide-react";
 
 import { SiteFooter, SiteHeader } from "@/components/brand/site-header";
@@ -79,7 +79,7 @@ function LandingPage() {
             <div className="relative order-first lg:order-last">
               <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                 <img
-                  src={heroIllustration.url}
+                  src={heroIllustration}
                   alt="Ilustrasi pemilik usaha memeriksa kesehatan bisnisnya"
                   width={1344}
                   height={896}
