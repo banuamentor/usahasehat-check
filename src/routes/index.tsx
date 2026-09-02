@@ -79,7 +79,7 @@ function LandingPage() {
             <div className="relative order-first lg:order-last">
               <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                 <img
-                  src={heroIllustration.url}
+                  src={heroIllustration}
                   alt="Ilustrasi pemilik usaha memeriksa kesehatan bisnisnya"
                   width={1344}
                   height={896}
